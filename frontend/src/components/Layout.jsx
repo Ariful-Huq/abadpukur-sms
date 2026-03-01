@@ -1,6 +1,6 @@
 import React from 'react';
-import Sidebar from './Sidebar'; // Correct
-import Navbar from './Navbar';   // Correct (now that Navbar has a default export)
+import Sidebar from './Sidebar';
+import Navbar from './Navbar';
 
 const Layout = ({ children }) => {
   return (

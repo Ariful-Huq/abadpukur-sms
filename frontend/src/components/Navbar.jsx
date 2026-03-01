@@ -39,4 +39,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; // This line fixes your "Uncaught SyntaxError"
+export default Navbar;

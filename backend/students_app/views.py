@@ -1,9 +1,14 @@
 from rest_framework import viewsets, filters, serializers
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Student, Attendance, Grade
-from .serializers import StudentSerializer, AttendanceSerializer, GradeSerializer
+from .models import Student, Attendance, Grade, Teacher
+from .serializers import StudentSerializer, AttendanceSerializer, GradeSerializer, TeacherSerializer
 from .views_mfs import MFSInitPaymentView, DownloadReceiptView
 
+
+
+class TeacherViewSet(viewsets.ModelViewSet):
+    queryset = Teacher.objects.all()
+    serializer_class = TeacherSerializer
 
 class GradeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Grade.objects.all()
