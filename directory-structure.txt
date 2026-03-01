@@ -1,0 +1,63 @@
+D:\abadpukur-school
+├───backend
+│	├───backend
+│	│   ├───__pycache__
+│	│   ├───__init__.py
+│	│   ├───asgi.py
+│	│   ├───settings.py
+│	│   ├───urls.py
+│	│   └───wsgi.py
+│	├───students_app
+│	│	├───migrations
+│	│	│	└───__init__.py
+│	│	├───templates
+│	│	│	└───receipt_template.html
+│	│   ├───admin.py
+│	│   ├───apps.py
+│	│   ├───models.py
+│	│   ├───serializers.py
+│	│   ├───tests.py
+│	│   ├───urls.py
+│	│   ├───utils_pdf.py
+│	│   ├───views_mfs.py
+│	│	└───views.py
+│	├───manage.py
+│	└───requirements.txt
+├───frontend
+│	│	├───node_modules
+│	│	├───public
+│	│	│	└───vite.svg
+│	│   └───src
+│	│		├───assets
+│	│		│	└───react.svg
+│	│		├───components
+│	│		│	├───Layout.jsx
+│	│		│	├───Navbar.jsx
+│	│		│	├───Sidebar.jsx
+│	│		│	├───ProtectedRoute.jsx
+│	│		│	└───StatCard.jsx
+│	│		├───context
+│	│		│	└───AuthContext.jsx
+│	│		├───pages
+│	│		│	├───AddStudent.jsx
+│	│		│	├───Analytics.jsx
+│	│		│	├───AttendanceSheet.jsx
+│	│		│	├───FeeManagement.jsx
+│	│		│	├───Home.jsx
+│	│		│	├───Login.jsx
+│	│		│	└───StudentList.jsx
+│	│		├───api
+│	│		│	└───axios.js
+│	│		├───.env.example
+│	│		├───App.jsx
+│	│		├───index.css
+│	│		└───main.jsx
+│	├───.gitignore
+│	├───eslint.config.js
+│	├───index.html
+│	├───package-lock.json
+│	├───package.json
+│	├───README.md
+│	├───tailwind.config.js
+│	└───vite.config.js
+└───env
