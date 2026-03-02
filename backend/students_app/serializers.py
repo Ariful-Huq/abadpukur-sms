@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Attendance, Grade, Teacher
+from .models import Student, Attendance, Grade, Teacher, FeeStructure, FeePayment
 
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,3 +34,18 @@ class StudentSerializer(serializers.ModelSerializer):
         if total == 0: return 100
         present = obj.attendance_records.filter(status='P').count()
         return round((present / total) * 100, 2)
+
+class FeeStructureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeeStructure
+        fields = '__all__'
+
+class FeePaymentSerializer(serializers.ModelSerializer):
+    # Helpful for displaying names in the React table without extra API calls
+    student_name = serializers.ReadOnlyField(source='student.first_name')
+    fee_name = serializers.ReadOnlyField(source='fee_type.name')
+
+    class Meta:
+        model = FeePayment
+        fields = '__all__'
+

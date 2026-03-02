@@ -11,6 +11,7 @@ import TeacherList from './pages/TeacherList';
 import AddTeacher from './pages/AddTeacher';
 import EditTeacher from './pages/EditTeacher';
 import Attendance from './pages/Attendance';
+import Fees from './pages/Fees';
 
 
 function App() {
@@ -72,6 +73,14 @@ function App() {
       <Route path="/attendance" element={
         <ProtectedRoute>
           <Layout><Attendance /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/fees" element={
+        <ProtectedRoute>
+          <Layout>
+            <Fees />
+          </Layout>
         </ProtectedRoute>
       } />
 

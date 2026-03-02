@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters, serializers
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Teacher, Student, Attendance, Grade 
-from .serializers import StudentSerializer, AttendanceSerializer, GradeSerializer, TeacherSerializer
+from .models import Teacher, Student, Attendance, Grade, FeeStructure, FeePayment
+from .serializers import StudentSerializer, AttendanceSerializer, GradeSerializer, TeacherSerializer, FeeStructureSerializer, FeePaymentSerializer
 from .views_mfs import MFSInitPaymentView, DownloadReceiptView
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -44,6 +44,16 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 defaults={'status': entry['status']}
             )
         return Response({"message": "Attendance marked successfully"}, status=201)
+
+class FeeStructureViewSet(viewsets.ModelViewSet):
+    queryset = FeeStructure.objects.all()
+    serializer_class = FeeStructureSerializer
+
+class FeePaymentViewSet(viewsets.ModelViewSet):
+    queryset = FeePayment.objects.all()
+    serializer_class = FeePaymentSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['student', 'status', 'payment_method']
 
 class DashboardStatsView(APIView):
     def get(self, request):

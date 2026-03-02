@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import StudentViewSet, AttendanceViewSet, GradeViewSet, TeacherViewSet, DashboardStatsView
+from .views import StudentViewSet, AttendanceViewSet, GradeViewSet, TeacherViewSet, DashboardStatsView, FeeStructureViewSet, FeePaymentViewSet
 from .views_mfs import MFSInitPaymentView, DownloadReceiptView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -8,6 +8,8 @@ router = DefaultRouter()
 router.register(r'students', StudentViewSet)
 router.register(r'attendance', AttendanceViewSet)
 router.register(r'teachers', TeacherViewSet)
+router.register(r'fee-structures', FeeStructureViewSet)
+router.register(r'fee-payments', FeePaymentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

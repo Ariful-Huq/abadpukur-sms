@@ -20,7 +20,7 @@ class Grade(models.Model):
     room_number = models.CharField(max_length=10, blank=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True, related_name='grades')
 
-    def __clstr__(self):
+    def __str__(self):
         return f"{self.name} - {self.section}"
 
 class Student(models.Model):
@@ -72,15 +72,18 @@ class Attendance(models.Model):
 class FeeStructure(models.Model):
     name = models.CharField(max_length=100) # e.g., "Monthly Tuition - Grade 10"
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True)
     due_date = models.DateField()
 
     def __str__(self):
-        return f"{self.name} - {self.amount}"
+        return f"{self.name} - (৳{self.amount})"
 
 class FeePayment(models.Model):
     METHOD_CHOICES = [
         ('CASH', 'Cash'),
-        ('MFS', 'Mobile Financial Service'),
+        ('MFS', 'Mobile Financial Service (bkash/Nagad)'),
+        ('Bank', 'Bank Transfer'),
+
     ]
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
@@ -88,13 +91,14 @@ class FeePayment(models.Model):
         ('FAILED', 'Failed'),
     ]
 
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='payments')
     fee_type = models.ForeignKey(FeeStructure, on_delete=models.PROTECT)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=10, choices=METHOD_CHOICES)
+    paid_at = models.DateTimeField(auto_now_add=True)
+    payment_method = models.CharField(max_length=10, choices=METHOD_CHOICES, default='Cash')
     transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
-    paid_at = models.DateTimeField(auto_now_add=True)
+    remarks = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.student.first_name} - {self.fee_type.name}"
+        return f"{self.student.first_name} - {self.fee_type.name} - ৳{self.amount_paid}"
