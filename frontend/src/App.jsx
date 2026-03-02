@@ -10,6 +10,7 @@ import EditStudent from './pages/EditStudent';
 import TeacherList from './pages/TeacherList';
 import AddTeacher from './pages/AddTeacher';
 import EditTeacher from './pages/EditTeacher';
+import Attendance from './pages/Attendance';
 
 
 function App() {
@@ -38,7 +39,6 @@ function App() {
         </ProtectedRoute>
       } />
 
-      {/* Add this new route inside your protected area */}
       <Route path="/students" element={
         <ProtectedRoute>
           <Layout><StudentList /></Layout>
@@ -66,6 +66,12 @@ function App() {
       <Route path="/edit-teacher/:id" element={
         <ProtectedRoute>
           <Layout><EditTeacher /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/attendance" element={
+        <ProtectedRoute>
+          <Layout><Attendance /></Layout>
         </ProtectedRoute>
       } />
 

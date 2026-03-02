@@ -12,9 +12,10 @@ class GradeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'section']
 
 class AttendanceSerializer(serializers.ModelSerializer):
+    student_name = serializers.ReadOnlyField(source='student.first_name')
     class Meta:
         model = Attendance
-        fields = '__all__'
+        fields = ['id', 'student', 'student_name', 'date', 'status', 'remarks']
 
 class StudentSerializer(serializers.ModelSerializer):
     attendance_rate = serializers.SerializerMethodField()
