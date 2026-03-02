@@ -56,8 +56,7 @@ const StudentList = () => {
         </div>
         <Link 
           to="/add-student" 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
-        >
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
           <UserPlus size={18} /> Add New Student
         </Link>
       </div>

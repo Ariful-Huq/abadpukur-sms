@@ -5,7 +5,7 @@ import { LayoutDashboard, Users, UserSquare, CalendarCheck, CreditCard, PieChart
 const Sidebar = () => {
   const menuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/teachers', icon: UserSquare, label: 'Teachers' },
+    { path: '/teachers', icon: UserSquare2, label: 'Teachers' },
     { path: '/students', icon: Users, label: 'Students' },
     { path: '/attendance', icon: CalendarCheck, label: 'Attendance' },
     { path: '/fees', icon: CreditCard, label: 'Fees' },
@@ -15,7 +15,7 @@ const Sidebar = () => {
   return (
     <div className="w-64 bg-indigo-900 text-white flex flex-col">
       <div className="p-6 text-2xl font-bold border-b border-indigo-800">
-        Abadpukur SMS
+        Abadpukur School
       </div>
       <nav className="flex-1 mt-6">
         {menuItems.map((item) => (

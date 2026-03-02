@@ -18,7 +18,23 @@ const TeacherList = () => {
     fetchTeachers();
   }, []);
 
+  
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`Are you sure you want to remove ${name} from the faculty?`)) {
+      try {
+        await api.delete(`teachers/${id}/`);
+        // Remove from UI immediately
+        setTeachers(teachers.filter(t => t.id !== id));
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Could not delete teacher. They might be assigned to a Grade.");
+      }
+    }
+  };
+
+
   if (loading) return <div className="p-10 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
+
 
   return (
     <div className="space-y-6">
@@ -53,7 +69,7 @@ const TeacherList = () => {
                </span>
                <div className="flex gap-3 text-gray-400">
                  <Link to={`/edit-teacher/${teacher.id}`} className="hover:text-indigo-600"><Edit size={16} /></Link>
-                 <button className="hover:text-red-600"><Trash2 size={16} /></button>
+                 <button onClick={() => handleDelete(teacher.id, `${teacher.first_name} ${teacher.last_name}`)} className="hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
                </div>
             </div>
           </div>

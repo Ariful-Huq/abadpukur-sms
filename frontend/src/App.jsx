@@ -9,6 +9,7 @@ import StudentDetail from './pages/StudentDetail';
 import EditStudent from './pages/EditStudent';
 import TeacherList from './pages/TeacherList';
 import AddTeacher from './pages/AddTeacher';
+import EditTeacher from './pages/EditTeacher';
 
 
 function App() {
@@ -59,6 +60,12 @@ function App() {
       <Route path="/edit-student/:id" element={
         <ProtectedRoute>
           <Layout><EditStudent /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/edit-teacher/:id" element={
+        <ProtectedRoute>
+          <Layout><EditTeacher /></Layout>
         </ProtectedRoute>
       } />
 
