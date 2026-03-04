@@ -61,11 +61,12 @@ class Attendance(models.Model):
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendance_records')
     date = models.DateField()
-    status = models.CharField(max_length=1, choices=[('P', 'Present'), ('A', 'Absent')])
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     remarks = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ('student', 'date') # Prevents double entry for the same day
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.student.first_name} - {self.date} - {self.status}"

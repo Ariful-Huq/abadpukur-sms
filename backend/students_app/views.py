@@ -36,17 +36,50 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
+    @action(detail=False, methods=['get'])
+    def monthly(self, request):
+        grade_id = request.query_params.get('grade')
+        month = request.query_params.get('month')
+        year = request.query_params.get('year')
+        
+        if not all([grade_id, month, year]):
+            return Response({"error": "Missing parameters"}, status=400)
+
+        # Fetch records for all students in that grade for the specific month
+        records = Attendance.objects.filter(
+            student__grade_id=grade_id,
+            date__month=month,
+            date__year=year
+        )
+        
+        data = [
+            {
+                "student": r.student_id, 
+                "date": r.date.strftime('%Y-%m-%d'), 
+                "status": r.status
+            } for r in records
+        ]
+        return Response(data)
+
     @action(detail=False, methods=['post'])
     def bulk_mark(self, request):
         attendance_data = request.data.get('records', []) # Expecting list of {student_id, status, date}
         
-        for entry in attendance_data:
-            Attendance.objects.update_or_create(
-                student_id=entry['student_id'],
-                date=entry['date'],
-                defaults={'status': entry['status']}
-            )
-        return Response({"message": "Attendance marked successfully"}, status=201)
+        created_count = 0
+        try:
+            for entry in attendance_data:
+                if not entry.get('status'):
+                    continue
+                Attendance.objects.update_or_create(
+                    student_id=entry['student_id'],
+                    date=entry['date'],
+                    defaults={'status': entry['status']}
+                )
+                created_count += 1
+            return Response({"message": f"Successfully updated {created_count} records"}, status=201)
+        except Exception as e:
+            print(f"ATTENDANCE ERROR: {str(e)}")
+            return Response({"error": str(e)}, status=500)
 
 class FeeStructureViewSet(viewsets.ModelViewSet):
     queryset = FeeStructure.objects.all()
