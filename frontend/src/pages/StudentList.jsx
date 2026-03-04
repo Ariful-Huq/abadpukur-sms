@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
-import { Users, UserPlus, Search, Eye, Edit, Trash2 } from 'lucide-react';
+import { Users, UserPlus, Search, Eye, Edit, Trash2, User } from 'lucide-react';
 
 const StudentList = () => {
   const [students, setStudents] = useState([]);
@@ -24,13 +24,12 @@ const StudentList = () => {
   };
 
   const handleDelete = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete ${name}? This will remove all their attendance and fee records.`)) {
+    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
       try {
         await api.delete(`students/${id}/`);
-        // Remove from local state so the UI updates immediately
         setStudents(students.filter(s => s.id !== id));
       } catch (err) {
-        alert("Failed to delete student. They might have related records preventing deletion.");
+        alert("Failed to delete student.");
       }
     }
   };
@@ -49,7 +48,8 @@ const StudentList = () => {
           </h1>
           <p className="text-gray-500 text-sm">Total Active Students: {filteredStudents.length}</p>
         </div>
-        <Link to="/students/add" className="bg-indigo-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-indigo-700 transition font-bold shadow-lg shadow-indigo-100">
+        {/* MATCHES APP.JSX: /add-student */}
+        <Link to="/add-student" className="bg-indigo-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-indigo-700 transition font-bold shadow-lg shadow-indigo-100">
           <UserPlus size={18} /> Add Student
         </Link>
       </div>
@@ -69,7 +69,7 @@ const StudentList = () => {
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
             <tr>
-              <th className="px-6 py-4 font-semibold">Student Name</th>
+              <th className="px-6 py-4 font-semibold">Student Details</th>
               <th className="px-6 py-4 font-semibold">Grade</th>
               <th className="px-6 py-4 font-semibold text-center">Attendance</th>
               <th className="px-6 py-4 text-right">Actions</th>
@@ -79,18 +79,32 @@ const StudentList = () => {
             {filteredStudents.map((student) => (
               <tr key={student.id} className="hover:bg-indigo-50/30 transition-colors group">
                 <td className="px-6 py-4">
-                  <Link to={`/students/${student.id}`} className="block">
-                    <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                      {student.first_name} {student.last_name}
-                    </p>
-                    <p className="text-xs text-gray-400 font-mono uppercase">{student.registration_number}</p>
+                  {/* MATCHES APP.JSX: /students/:id */}
+                  <Link to={`/students/${student.id}`} className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-50 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
+                      {student.photo ? (
+                        <img 
+                          src={student.photo} 
+                          alt={student.first_name} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User size={20} className="text-indigo-400" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                        {student.first_name} {student.last_name}
+                      </p>
+                      <p className="text-xs text-gray-400 font-mono uppercase tracking-tighter">
+                        ID: {student.registration_number}
+                      </p>
+                    </div>
                   </Link>
                 </td>
                 
-                <td className="px-6 py-4">
-                  <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded uppercase">
-                    {student.grade_name}
-                  </span>
+                <td className="px-6 py-4 text-sm font-medium text-gray-600 uppercase">
+                  {student.grade_name}
                 </td>
 
                 <td className="px-6 py-4 text-center">
@@ -106,28 +120,28 @@ const StudentList = () => {
                 </td>
 
                 <td className="px-6 py-4">
-                  <div className="flex justify-end gap-1">
+                  <div className="flex justify-end gap-1 relative z-10">
                     <Link 
                       to={`/students/${student.id}`} 
                       className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition"
-                      title="View Profile"
                     >
                       <Eye size={18} />
                     </Link>
                     
+                    {/* MATCHES APP.JSX: /edit-student/:id */}
                     <Link 
-                      to={`/students/edit/${student.id}`} 
+                      to={`/edit-student/${student.id}`} 
                       className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg transition"
-                      title="Edit Student"
                     >
                       <Edit size={18} />
                     </Link>
 
-                    {/* RE-ADDED DELETE BUTTON */}
                     <button 
-                      onClick={() => handleDelete(student.id, `${student.first_name} ${student.last_name}`)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDelete(student.id, `${student.first_name} ${student.last_name}`);
+                      }}
                       className="p-2 text-rose-600 hover:bg-rose-100 rounded-lg transition"
-                      title="Delete Student"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -137,13 +151,6 @@ const StudentList = () => {
             ))}
           </tbody>
         </table>
-        
-        {filteredStudents.length === 0 && !loading && (
-          <div className="p-20 text-center text-gray-400">
-            <Users size={40} className="mx-auto mb-4 opacity-20" />
-            <p>No students found.</p>
-          </div>
-        )}
       </div>
     </div>
   );

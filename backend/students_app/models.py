@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator
 class Teacher(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    photo = models.ImageField(upload_to='teacher_photos/', null=True, blank=True)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20)
     subject = models.CharField(max_length=100, help_text="Primary subject taught")
@@ -35,6 +36,7 @@ class Student(models.Model):
     registration_number = models.CharField(max_length=20, unique=True)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    photo = models.ImageField(upload_to='student_photos/', null=True, blank=True)
 
     # Relationships
     grade = models.ForeignKey(Grade, on_delete=models.PROTECT, related_name='students')
