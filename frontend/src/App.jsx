@@ -12,6 +12,8 @@ import AddTeacher from './pages/AddTeacher';
 import EditTeacher from './pages/EditTeacher';
 import Attendance from './pages/Attendance';
 import Fees from './pages/Fees';
+import Analytics from './pages/Analytics';
+import StudentProfile from "./pages/StudentProfile";
 
 
 function App() {
@@ -51,12 +53,6 @@ function App() {
           <Layout><AddStudent /></Layout>
           </ProtectedRoute>
         } />
-      
-      <Route path="/students/:id" element={
-        <ProtectedRoute>
-          <Layout><StudentDetail /></Layout>
-        </ProtectedRoute>
-      } />
 
       <Route path="/edit-student/:id" element={
         <ProtectedRoute>
@@ -80,6 +76,22 @@ function App() {
         <ProtectedRoute>
           <Layout>
             <Fees />
+          </Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/analytics" element={
+        <ProtectedRoute>
+          <Layout>
+            <Analytics />
+          </Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/students/:id" element={
+        <ProtectedRoute>
+          <Layout>
+            <StudentProfile />
           </Layout>
         </ProtectedRoute>
       } />

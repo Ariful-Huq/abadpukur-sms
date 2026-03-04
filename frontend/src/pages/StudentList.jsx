@@ -1,139 +1,147 @@
-import React, { useEffect, useState } from 'react';
-import api from '../api/axios';
-import { UserPlus, Search, Edit, Trash2, Filter, Loader2, Eye, EyeIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../api/axios';
+import { Users, UserPlus, Search, Eye, Edit, Trash2 } from 'lucide-react';
 
 const StudentList = () => {
   const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const fetchStudents = async (query = '') => {
-    setLoading(true);
-    try {
-      // This uses the 'search' filter we enabled in Django's views.py
-      const response = await api.get(`students/?search=${query}`);
-      setStudents(response.data);
-    } catch (error) {
-      console.error("Failed to fetch students", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStudents();
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    fetchStudents(searchTerm);
+  const fetchStudents = async () => {
+    try {
+      const res = await api.get('students/');
+      setStudents(res.data);
+    } catch (err) {
+      console.error("Failed to fetch students", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id, name) => {
-    // Always ask for confirmation before deleting data!
-    if (window.confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
+    if (window.confirm(`Are you sure you want to delete ${name}? This will remove all their attendance and fee records.`)) {
       try {
         await api.delete(`students/${id}/`);
-        
-        // Update the UI immediately by filtering out the deleted student
-        setStudents(students.filter(student => student.id !== id));
-        
-        alert("Student record deleted successfully.");
-      } catch (error) {
-        console.error("Delete failed:", error);
-        alert("Could not delete student. They might have related records (like attendance).");
+        // Remove from local state so the UI updates immediately
+        setStudents(students.filter(s => s.id !== id));
+      } catch (err) {
+        alert("Failed to delete student. They might have related records preventing deletion.");
       }
     }
   };
 
+  const filteredStudents = students.filter(s => 
+    `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.registration_number.includes(searchTerm)
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Student Directory</h1>
-          <p className="text-gray-500 text-sm">Manage and view all enrolled students</p>
+          <h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
+            <Users className="text-indigo-600" /> Student Directory
+          </h1>
+          <p className="text-gray-500 text-sm">Total Active Students: {filteredStudents.length}</p>
         </div>
-        <Link 
-          to="/add-student" 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
-          <UserPlus size={18} /> Add New Student
+        <Link to="/students/add" className="bg-indigo-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-indigo-700 transition font-bold shadow-lg shadow-indigo-100">
+          <UserPlus size={18} /> Add Student
         </Link>
       </div>
 
-      {/* Filters & Search */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4">
-        <form onSubmit={handleSearch} className="relative flex-1">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-            <Search size={18} />
-          </span>
-          <input
-            type="text"
-            placeholder="Search by name or registration ID..."
-            className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </form>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition">
-          <Filter size={18} /> Filters
-        </button>
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+        <input
+          type="text"
+          placeholder="Search by name or ID..."
+          className="w-full pl-10 pr-4 py-3 border rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
-      {/* Table Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <Loader2 className="animate-spin mb-2" size={32} />
-            <p>Loading student data...</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-100 text-gray-600 font-semibold text-sm uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4">Student Name</th>
-                  <th className="px-6 py-4">Registration ID</th>
-                  <th className="px-6 py-4">Grade/Class</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {students.length > 0 ? (
-                  students.map((student) => (
-                    <tr key={student.id} className="hover:bg-indigo-50/30 transition group">
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{student.first_name} {student.last_name}</div>
-                        <div className="text-xs text-gray-500">{student.parent_phone}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-mono text-gray-600">{student.registration_number}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">Grade {student.grade_name || 'No Grade Assigned'}</td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          student.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {student.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-center gap-3 text-gray-400">
-                          <Link to={`/students/${student.id}`} className="hover:text-blue-600 transition-colors" title="View Profile"><Eye size={18} /></Link>
-                          <Link to={`/edit-student/${student.id}`} className="hover:text-indigo-600 transition-colors" title="Edit Student"><Edit size={18} /></Link>
-                          <button onClick={() => handleDelete(student.id, `${student.first_name} ${student.last_name}`)} className="hover:text-red-600 transition-colors" title="Delete Student"><Trash2 size={18} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="px-6 py-12 text-center text-gray-500 italic">
-                      No students found matching your criteria.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+            <tr>
+              <th className="px-6 py-4 font-semibold">Student Name</th>
+              <th className="px-6 py-4 font-semibold">Grade</th>
+              <th className="px-6 py-4 font-semibold text-center">Attendance</th>
+              <th className="px-6 py-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {filteredStudents.map((student) => (
+              <tr key={student.id} className="hover:bg-indigo-50/30 transition-colors group">
+                <td className="px-6 py-4">
+                  <Link to={`/students/${student.id}`} className="block">
+                    <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                      {student.first_name} {student.last_name}
+                    </p>
+                    <p className="text-xs text-gray-400 font-mono uppercase">{student.registration_number}</p>
+                  </Link>
+                </td>
+                
+                <td className="px-6 py-4">
+                  <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded uppercase">
+                    {student.grade_name}
+                  </span>
+                </td>
+
+                <td className="px-6 py-4 text-center">
+                  <div className="inline-flex items-center gap-2">
+                    <div className="w-12 bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${student.attendance_rate < 75 ? 'bg-red-500' : 'bg-green-500'}`} 
+                        style={{ width: `${student.attendance_rate}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-bold text-gray-700">{student.attendance_rate}%</span>
+                  </div>
+                </td>
+
+                <td className="px-6 py-4">
+                  <div className="flex justify-end gap-1">
+                    <Link 
+                      to={`/students/${student.id}`} 
+                      className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition"
+                      title="View Profile"
+                    >
+                      <Eye size={18} />
+                    </Link>
+                    
+                    <Link 
+                      to={`/students/edit/${student.id}`} 
+                      className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg transition"
+                      title="Edit Student"
+                    >
+                      <Edit size={18} />
+                    </Link>
+
+                    {/* RE-ADDED DELETE BUTTON */}
+                    <button 
+                      onClick={() => handleDelete(student.id, `${student.first_name} ${student.last_name}`)}
+                      className="p-2 text-rose-600 hover:bg-rose-100 rounded-lg transition"
+                      title="Delete Student"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        {filteredStudents.length === 0 && !loading && (
+          <div className="p-20 text-center text-gray-400">
+            <Users size={40} className="mx-auto mb-4 opacity-20" />
+            <p>No students found.</p>
           </div>
         )}
       </div>

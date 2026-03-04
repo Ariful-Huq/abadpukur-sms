@@ -59,7 +59,7 @@ class Attendance(models.Model):
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendance_records')
     date = models.DateField()
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+    status = models.CharField(max_length=1, choices=[('P', 'Present'), ('A', 'Absent')])
     remarks = models.TextField(blank=True, null=True)
 
     class Meta:

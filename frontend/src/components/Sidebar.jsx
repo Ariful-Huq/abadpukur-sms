@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserSquare, CalendarCheck, CreditCard, PieChart, LogOut, UserSquare2 } from 'lucide-react';
+import { LayoutDashboard, Users, UserSquare, CalendarCheck, CreditCard, PieChart, LogOut, UserSquare2, BarChart3 } from 'lucide-react';
 
 const Sidebar = () => {
   const menuItems = [
@@ -9,7 +9,7 @@ const Sidebar = () => {
     { path: '/students', icon: Users, label: 'Students' },
     { path: '/attendance', icon: CalendarCheck, label: 'Attendance' },
     { path: '/fees', icon: CreditCard, label: 'Fees' },
-    { path: '/analytics', icon: PieChart, label: 'Analytics' },
+    { path: '/analytics', icon: BarChart3, label: 'Analytics' },
   ];
 
   return (

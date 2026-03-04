@@ -1,12 +1,15 @@
+import csv
 from rest_framework import viewsets, filters, serializers
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.http import HttpResponse
+from django.utils import timezone
+from rest_framework.views import APIView
 from .models import Teacher, Student, Attendance, Grade, FeeStructure, FeePayment
 from .serializers import StudentSerializer, AttendanceSerializer, GradeSerializer, TeacherSerializer, FeeStructureSerializer, FeePaymentSerializer
 from .views_mfs import MFSInitPaymentView, DownloadReceiptView
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.utils import timezone
-from rest_framework.views import APIView
+
 
 
 class TeacherViewSet(viewsets.ModelViewSet):
@@ -71,3 +74,28 @@ class DashboardStatsView(APIView):
             "attendance_rate": round(attendance_rate, 1),
             "today": today
         })
+
+class ExportFeeReportView(APIView):
+    def get(self, request):
+        # Create the HttpResponse object with the appropriate CSV header.
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="fee_report_2026.csv"'
+
+        writer = csv.writer(response)
+        # Header Row
+        writer.writerow(['Student', 'Registration', 'Fee Type', 'Amount', 'Method', 'Date', 'Status'])
+
+        # Data Rows
+        payments = FeePayment.objects.select_related('student', 'fee_type').all()
+        for p in payments:
+            writer.writerow([
+                f"{p.student.first_name} {p.student.last_name}",
+                p.student.registration_number,
+                p.fee_type.name,
+                p.amount_paid,
+                p.get_payment_method_display(),
+                p.paid_at.strftime('%Y-%m-%d'),
+                p.status
+            ])
+
+        return response
