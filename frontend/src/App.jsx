@@ -5,7 +5,6 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import StudentList from './pages/StudentList';
 import AddStudent from './pages/AddStudent';
-import StudentDetail from './pages/StudentDetail';
 import EditStudent from './pages/EditStudent';
 import TeacherList from './pages/TeacherList';
 import AddTeacher from './pages/AddTeacher';

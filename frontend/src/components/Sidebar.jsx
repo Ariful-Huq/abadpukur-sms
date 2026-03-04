@@ -14,8 +14,14 @@ const Sidebar = () => {
 
   return (
     <div className="w-64 bg-indigo-900 text-white flex flex-col">
-      <div className="p-6 text-2xl font-bold border-b border-indigo-800">
-        Abadpukur School
+      <div className="p-6 border-b border-indigo-800 flex items-center">
+        <img 
+          src="/AbadpukurSchoolLogo.svg" 
+          alt="School Logo"
+          style={{ height: '32px', width: '32px' }}
+          className="h-8 w-auto block flex-shrink-0" 
+        />
+        <span className="ml-3 text-xl font-bold leading-tight">Abadpukur High School</span>
       </div>
       <nav className="flex-1 mt-6">
         {menuItems.map((item) => (
