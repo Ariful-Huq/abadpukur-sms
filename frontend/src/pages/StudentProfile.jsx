@@ -50,8 +50,16 @@ const StudentProfile = () => {
 
       {/* Header Info Card */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-8 items-center">
-        <div className="w-32 h-32 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 shadow-inner">
-          <User size={60} />
+        <div className="w-32 h-32 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 shadow-inner overflow-hidden border-4 border-white ring-1 ring-gray-100">
+          {student.photo ? (
+            <img 
+              src={student.photo} 
+              alt={student.first_name} 
+              className="w-full h-full object-cover" 
+            />
+          ) : (
+            <User size={60} />
+          )}
         </div>
         <div className="flex-1 space-y-2 text-center md:text-left">
           <h1 className="text-3xl font-bold text-gray-900 leading-tight">

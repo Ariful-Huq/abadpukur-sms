@@ -41,6 +41,12 @@ function App() {
         </ProtectedRoute>
       } />
 
+      <Route path="/edit-teacher/:id" element={
+        <ProtectedRoute>
+          <Layout><EditTeacher /></Layout>
+        </ProtectedRoute>
+      } />
+
       <Route path="/students" element={
         <ProtectedRoute>
           <Layout><StudentList /></Layout>
@@ -56,12 +62,6 @@ function App() {
       <Route path="/edit-student/:id" element={
         <ProtectedRoute>
           <Layout><EditStudent /></Layout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/edit-teacher/:id" element={
-        <ProtectedRoute>
-          <Layout><EditTeacher /></Layout>
         </ProtectedRoute>
       } />
 

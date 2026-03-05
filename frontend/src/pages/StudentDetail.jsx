@@ -39,8 +39,16 @@ const StudentDetail = () => {
         {/* Header/Banner */}
         <div className="bg-indigo-600 h-32 relative">
           <div className="absolute -bottom-12 left-8 bg-white p-2 rounded-2xl shadow-md">
-            <div className="bg-indigo-100 w-24 h-24 rounded-xl flex items-center justify-center text-indigo-600">
-              <User size={48} />
+            <div className="bg-indigo-100 w-24 h-24 rounded-xl flex items-center justify-center text-indigo-600 overflow-hidden border-2 border-white">
+              {student.photo ? (
+                <img 
+                  src={student.photo} 
+                  alt={`${student.first_name} profile`} 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                <User size={48} />
+              )}
             </div>
           </div>
         </div>

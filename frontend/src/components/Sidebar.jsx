@@ -1,11 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserSquare, CalendarCheck, CreditCard, PieChart, LogOut, UserSquare2, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, User, CalendarCheck, CreditCard, PieChart, LogOut, UserSquare2, BarChart3 } from 'lucide-react';
 
 const Sidebar = () => {
   const menuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/teachers', icon: UserSquare2, label: 'Teachers' },
+    { path: '/teachers', icon: User, label: 'Teachers' },
     { path: '/students', icon: Users, label: 'Students' },
     { path: '/attendance', icon: CalendarCheck, label: 'Attendance' },
     { path: '/fees', icon: CreditCard, label: 'Fees' },

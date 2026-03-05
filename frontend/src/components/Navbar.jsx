@@ -7,7 +7,7 @@ const Navbar = () => {
       {/* Search Bar */}
       <div className="relative w-96">
         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-          <Search size={18} />
+          <Search size={20} />
         </span>
         <input
           type="text"

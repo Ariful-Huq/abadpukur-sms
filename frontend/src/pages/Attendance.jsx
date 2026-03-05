@@ -208,9 +208,9 @@ const Attendance = () => {
 
           {/* Date Navigator */}
           <div className="flex items-center bg-gray-100 rounded-xl p-1 ml-2">
-            <button onClick={() => setViewDate(new Date(year, month - 1))} className="p-2 hover:bg-white rounded-lg transition"><ChevronLeft size={20}/></button>
+            <button onClick={() => setViewDate(new Date(year, month - 1))} className="p-2 hover:bg-white rounded-lg transition"><ChevronLeft size={18}/></button>
             <span className="px-4 font-bold text-gray-700 min-w-[140px] text-center">{viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
-            <button onClick={() => setViewDate(new Date(year, month + 1))} className="p-2 hover:bg-white rounded-lg transition"><ChevronRight size={20}/></button>
+            <button onClick={() => setViewDate(new Date(year, month + 1))} className="p-2 hover:bg-white rounded-lg transition"><ChevronRight size={18}/></button>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { UserPlus, Mail, Phone, Edit, Trash2, Loader2, User } from 'lucide-react';
+import { UserPlus, Mail, Phone, Edit, Trash2, Loader2, User, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const TeacherList = () => {
@@ -11,9 +11,16 @@ const TeacherList = () => {
     const fetchTeachers = async () => {
       try {
         const res = await api.get('teachers/');
-        setTeachers(res.data);
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
+        if (res.data.results) {
+          setTeachers(res.data.results);
+        } else {
+          setTeachers(res.data);
+        }
+      } catch (err) {
+        console.error("API Error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchTeachers();
   }, []);
@@ -24,57 +31,88 @@ const TeacherList = () => {
         await api.delete(`teachers/${id}/`);
         setTeachers(teachers.filter(t => t.id !== id));
       } catch (err) {
-        alert("Could not delete teacher. They might be assigned to a Grade.");
+        alert("Action restricted: This teacher is still assigned to a Grade/Class.");
       }
     }
   };
 
-  if (loading) return <div className="p-10 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
+  if (loading) return (
+    <div className="p-20 text-center flex flex-col items-center gap-4">
+      <Loader2 className="animate-spin text-indigo-600" size={40} />
+      <p className="text-gray-500 font-medium">Fetching Faculty Members...</p>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Faculty Directory</h1>
-        <Link to="/add-teacher" className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition">
-          <UserPlus size={18} /> Add Teacher
+      <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Faculty Directory</h1>
+          <p className="text-sm text-gray-500 font-medium">Managing {teachers.length} active educators</p>
+        </div>
+        <Link to="/add-teacher" className="bg-indigo-600 text-white px-6 py-3 rounded-2xl flex items-center gap-2 shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-105 transition-all font-bold">
+          <UserPlus size={20} /> Add Faculty
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teachers.map(teacher => (
-          <div key={teacher.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div className="flex items-center gap-4 mb-4">
-              {/* Profile Image Column */}
-              <div className="w-14 h-14 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {teacher.photo ? (
-                  <img src={teacher.photo} className="w-full h-full object-cover" alt={teacher.first_name} />
-                ) : (
-                  <User size={24} className="text-indigo-300" />
-                )}
+      {teachers.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {teachers.map(teacher => (
+            <div key={teacher.id} className="bg-white p-6 rounded-3xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:scale-110 transition-transform">
+                  {teacher.photo ? (
+                    <img src={teacher.photo} className="w-full h-full object-cover" alt={teacher.first_name} />
+                  ) : (
+                    <User size={28} className="text-indigo-300" />
+                  )}
+                </div>
+                <div className="overflow-hidden">
+                  <h3 className="font-bold text-lg text-gray-800 truncate leading-tight">{teacher.first_name} {teacher.last_name}</h3>
+                  <p className="text-xs text-indigo-600 font-black uppercase tracking-wider mt-1">{teacher.subject}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-lg leading-tight">{teacher.first_name} {teacher.last_name}</h3>
-                <p className="text-sm text-indigo-600 font-semibold">{teacher.subject}</p>
+              
+              <div className="space-y-2 text-sm text-gray-600 mb-6 bg-gray-50/50 p-4 rounded-2xl">
+                <div className="flex items-center gap-3"><Mail size={14} className="text-gray-400"/> <span className="truncate">{teacher.email}</span></div>
+                <div className="flex items-center gap-3"><Phone size={14} className="text-gray-400"/> {teacher.phone}</div>
               </div>
-            </div>
-            
-            <div className="space-y-2 text-sm text-gray-600 mb-6">
-              <div className="flex items-center gap-2"><Mail size={14} className="text-gray-400"/> {teacher.email}</div>
-              <div className="flex items-center gap-2"><Phone size={14} className="text-gray-400"/> {teacher.phone}</div>
-            </div>
 
-            <div className="flex border-t pt-4 justify-between items-center">
-               <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${teacher.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                 {teacher.is_active ? 'Active' : 'On Leave'}
-               </span>
-               <div className="flex gap-3 text-gray-400">
-                 <Link to={`/edit-teacher/${teacher.id}`} className="hover:text-indigo-600 transition-colors"><Edit size={16} /></Link>
-                 <button onClick={() => handleDelete(teacher.id, `${teacher.first_name} ${teacher.last_name}`)} className="hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
-               </div>
+              {/* Displaying Assigned Grades */}
+              <div className="mb-6 px-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] mb-3">Class Assignments</p>
+                <div className="flex flex-wrap gap-2">
+                  {teacher.assigned_grades && teacher.assigned_grades.length > 0 ? (
+                    teacher.assigned_grades.map((grade, idx) => (
+                      <span key={idx} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-[10px] font-bold border border-indigo-100">
+                        {grade}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-[10px] text-gray-400 italic">Unassigned</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex border-t border-gray-50 pt-4 justify-between items-center">
+                 <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${teacher.is_active ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-700'}`}>
+                   {teacher.is_active ? '● Active' : '● On Leave'}
+                 </span>
+                 <div className="flex gap-4 text-gray-300">
+                   <Link to={`/edit-teacher/${teacher.id}`} className="hover:text-indigo-600 transition-colors"><Edit size={18} /></Link>
+                   <button onClick={() => handleDelete(teacher.id, `${teacher.first_name} ${teacher.last_name}`)} className="hover:text-rose-500 transition-colors"><Trash2 size={18} /></button>
+                 </div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100 text-center">
+          <BookOpen size={48} className="mx-auto text-gray-200 mb-4" />
+          <p className="text-gray-400 font-medium">No faculty members found.</p>
+          <Link to="/add-teacher" className="text-indigo-600 text-sm font-bold mt-2 inline-block hover:underline">Register your first teacher</Link>
+        </div>
+      )}
     </div>
   );
 };
