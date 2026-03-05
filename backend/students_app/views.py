@@ -65,21 +65,20 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def bulk_mark(self, request):
         attendance_data = request.data.get('records', []) # Expecting list of {student_id, status, date}
         
-        created_count = 0
-        try:
-            for entry in attendance_data:
-                if not entry.get('status'):
-                    continue
+        for entry in attendance_data:
+            if entry.get('status'):
                 Attendance.objects.update_or_create(
                     student_id=entry['student_id'],
                     date=entry['date'],
                     defaults={'status': entry['status']}
                 )
-                created_count += 1
-            return Response({"message": f"Successfully updated {created_count} records"}, status=201)
-        except Exception as e:
-            print(f"ATTENDANCE ERROR: {str(e)}")
-            return Response({"error": str(e)}, status=500)
+            else:
+                Attendance.objects.filter(
+                    student_id=entry['student_id'],
+                    date=entry['date'],
+                ).delete()
+        return Response({"message": "Successfully synchronized records"}, status=201)
+
 
 class FeeStructureViewSet(viewsets.ModelViewSet):
     queryset = FeeStructure.objects.all()
