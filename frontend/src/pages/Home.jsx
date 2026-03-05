@@ -1,45 +1,107 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
-import { Users, UserCheck, Calendar, TrendingUp } from 'lucide-react';
+import { Users, GraduationCap, DollarSign, Activity, TrendingUp } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 
 const Home = () => {
-  const [stats, setStats] = useState({ total_students: 0, total_teachers: 0, attendance_rate: 0 });
+  const [stats, setStats] = useState({
+    total_students: 0,
+    total_teachers: 0,
+    attendance_rate: 0,
+    total_fees: 0,
+    fee_trend: [],
+    grade_distribution: []
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('dashboard-stats/').then(res => setStats(res.data));
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('dashboard-stats/');
+        setStats(res.data);
+      } catch (err) {
+        console.error("Dashboard failed to load", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
   }, []);
 
-  const cards = [
-    { label: 'Total Students', value: stats.total_students, icon: Users, color: 'bg-blue-500' },
-    { label: 'Total Teachers', value: stats.total_teachers, icon: UserCheck, color: 'bg-green-500' },
-    { label: "Today's Attendance", value: `${stats.attendance_rate}%`, icon: Calendar, color: 'bg-purple-500' },
-  ];
+  if (loading) return <div className="p-10 text-center font-bold">Loading Edumanager Insights...</div>;
+
+  const COLORS = ['#4f46e5', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">School Overview</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {cards.map((card, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-5">
-            <div className={`${card.color} p-4 rounded-xl text-white`}>
-              <card.icon size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">{card.label}</p>
-              <h2 className="text-2xl font-bold text-gray-900">{card.value}</h2>
-            </div>
-          </div>
-        ))}
+    <div className="space-y-8 p-6 pb-20">
+      {/* Top Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard icon={<Users className="text-blue-600" />} label="Active Students" value={stats.total_students} color="bg-blue-50" />
+        <StatCard icon={<GraduationCap className="text-indigo-600" />} label="Active Teachers" value={stats.total_teachers} color="bg-indigo-50" />
+        <StatCard icon={<DollarSign className="text-emerald-600" />} label="Total Revenue" value={`৳${stats.total_fees}`} color="bg-emerald-50" />
+        <StatCard icon={<Activity className="text-rose-600" />} label="Attendance Rate" value={`${stats.attendance_rate}%`} subValue={`${stats.late_today} Late Today`} color="bg-rose-50" />
       </div>
 
-      {/* Placeholder for a Chart or Recent Activity */}
-      <div className="bg-white p-8 rounded-2xl border border-dashed border-gray-200 text-center text-gray-400">
-        <TrendingUp className="mx-auto mb-2" size={40} />
-        <p>Charts and recent activity will appear here as you add more data.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Revenue Trend Chart */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <TrendingUp size={20} className="text-emerald-500" /> Revenue Collection Trend
+          </h2>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={stats.fee_trend}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="month" 
+                  tickFormatter={(str) => new Date(str).toLocaleDateString('en-US', { month: 'short' })} 
+                  tick={{fontSize: 12}}
+                />
+                <YAxis tick={{fontSize: 12}} />
+                <Tooltip 
+                   contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                   formatter={(value) => [`৳${value}`, "Amount"]}
+                />
+                <Line type="monotone" dataKey="total" stroke="#4f46e5" strokeWidth={4} dot={{ r: 6 }} activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Grade Distribution Bar Chart */}
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <h2 className="text-lg font-bold text-gray-800 mb-6">Students per Grade</h2>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats.grade_distribution.filter(g => g.count > 0)}>
+                <XAxis dataKey="name" tick={{fontSize: 10}} />
+                <Tooltip cursor={{fill: '#f8fafc'}} />
+                <Bar dataKey="count" radius={[10, 10, 0, 0]}>
+                  {stats.grade_distribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
+const StatCard = ({ icon, label, value, subValue, color }) => (
+  <div className={`p-6 rounded-3xl ${color} flex items-center gap-5 transition-transform hover:scale-105 cursor-pointer`}>
+    <div className="bg-white p-4 rounded-2xl shadow-sm">{icon}</div>
+    <div>
+      <p className="text-sm font-medium text-gray-500">{label}</p>
+      <div className="flex items-baseline gap-2">
+        <p className="text-2xl font-bold text-gray-900">{value}</p>
+        {subValue && <span className="text-[10px] font-bold text-rose-500 uppercase">{subValue}</span>}
+      </div>
+    </div>
+  </div>
+);
+
 export default Home;
+

@@ -3,7 +3,7 @@ from .models import Student, Attendance, Grade, Teacher, FeeStructure, FeePaymen
 
 class TeacherSerializer(serializers.ModelSerializer):
     assigned_grades = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Teacher
         fields = [
@@ -37,7 +37,7 @@ class TeacherSerializer(serializers.ModelSerializer):
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
-        fields = ['id', 'name', 'section']
+        fields = ['id', 'name', 'section', 'teacher']
 
 class AttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.ReadOnlyField(source='student.first_name')

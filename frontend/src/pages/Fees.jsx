@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
-import { CreditCard, Save, History, CheckCircle, Clock, AlertCircle, Search, FileText, Download } from 'lucide-react';
+import { CreditCard, Save, History, CheckCircle, Clock, Search, FileText, Smartphone } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Fees = () => {
   const [students, setStudents] = useState([]);
@@ -10,6 +11,9 @@ const Fees = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     student: '',
@@ -37,14 +41,41 @@ const Fees = () => {
     }
   };
 
+  // Check for MFS Redirect Success
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('status') === 'success') {
+      const tid = params.get('trans_id');
+      alert(`Success! Transaction ${tid} verified via Demo MFS.`);
+      // Clean the URL
+      navigate('/fees', { replace: true });
+    }
     loadData();
-  }, []);
+  }, [location]);
 
   const handleDownloadReceipt = (paymentId) => {
-    // This points to your Django view: api/receipt/<id>/
     const url = `${api.defaults.baseURL}receipt/${paymentId}/`;
     window.open(url, '_blank');
+  };
+
+  const handlePaybKash = async (pay) => {
+    try {
+      setLoading(true);
+      const res = await api.post('payment/init/', {
+        student_id: pay.student,
+        fee_type_id: pay.fee_type,
+        amount: pay.amount_paid
+      });
+      
+      if (res.data.gateway_url) {
+        // In demo mode, this just redirects back to this page with success params
+        window.location.href = res.data.gateway_url;
+      }
+    } catch (err) {
+      alert("MFS Initialization failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePaymentSubmit = async (e) => {
@@ -61,7 +92,8 @@ const Fees = () => {
   };
 
   const filteredPayments = recentPayments.filter(pay => {
-    const matchesSearch = pay.student_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const name = pay.student_name ? pay.student_name.toLowerCase() : "";
+    const matchesSearch = name.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || pay.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -74,12 +106,12 @@ const Fees = () => {
         </h1>
         <div className="bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 hidden md:block">
            <p className="text-indigo-700 text-sm font-medium">
-             Current View Total: <span className="font-bold">৳{filteredPayments.reduce((acc, curr) => acc + parseFloat(curr.amount_paid), 0).toFixed(2)}</span>
+             Total: <span className="font-bold">৳{filteredPayments.reduce((acc, curr) => acc + parseFloat(curr.amount_paid), 0).toFixed(2)}</span>
            </p>
         </div>
       </div>
 
-      {/* Payment Form Section */}
+      {/* Payment Form */}
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
         <h2 className="text-lg font-semibold mb-6 flex items-center gap-2 text-gray-700">
           <Save size={18} className="text-gray-400" /> Record New Payment
@@ -87,7 +119,7 @@ const Fees = () => {
         <form onSubmit={handlePaymentSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-500 uppercase">Select Student</label>
-            <select required className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-500 transition"
+            <select required className="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-500"
               value={formData.student} onChange={e => setFormData({...formData, student: e.target.value})}>
               <option value="">Select Student...</option>
               {students.map(s => <option key={s.id} value={s.id}>{s.first_name} {s.last_name} ({s.registration_number})</option>)}
@@ -113,95 +145,62 @@ const Fees = () => {
               value={formData.amount_paid} onChange={e => setFormData({...formData, amount_paid: e.target.value})} />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase">Method</label>
-            <select className="w-full p-3 border rounded-xl bg-gray-50"
-              value={formData.payment_method} onChange={e => setFormData({...formData, payment_method: e.target.value})}>
-              <option value="CASH">Cash</option>
-              <option value="MFS">bKash/Nagad (MFS)</option>
-              <option value="Bank">Bank Transfer</option>
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase">Transaction ID</label>
-            <input type="text" className="w-full p-3 border rounded-xl bg-gray-50"
-              value={formData.transaction_id} onChange={e => setFormData({...formData, transaction_id: e.target.value})} />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase">Status</label>
-            <select className="w-full p-3 border rounded-xl bg-gray-50"
-              value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
-              <option value="COMPLETED">Completed</option>
-              <option value="PENDING">Pending</option>
-              <option value="FAILED">Failed</option>
-            </select>
-          </div>
-
           <button type="submit" disabled={loading} className="lg:col-span-3 bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition flex justify-center items-center gap-2">
-            {loading ? "Processing..." : <><Save size={20}/> Record Payment</>}
+            {loading ? "Processing..." : <><Save size={20}/> Record Cash Payment</>}
           </button>
         </form>
       </div>
 
-      {/* Transaction History Section */}
+      {/* History */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <History className="text-gray-400" size={20} />
-            <h2 className="text-lg font-bold text-gray-700">Transaction History</h2>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input type="text" placeholder="Search student..." className="pl-10 pr-4 py-2 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-indigo-500 w-64"
+          <h2 className="text-lg font-bold text-gray-700 flex items-center gap-2"><History size={20}/> Transaction History</h2>
+          <div className="flex gap-3">
+             <input type="text" placeholder="Search..." className="px-4 py-2 border rounded-lg text-sm bg-gray-50"
                 value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-            </div>
-            
-            <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border">
-              <button onClick={() => setStatusFilter('ALL')} className={`px-3 py-1 text-xs font-bold rounded-md transition ${statusFilter === 'ALL' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500'}`}>All</button>
-              <button onClick={() => setStatusFilter('PENDING')} className={`px-3 py-1 text-xs font-bold rounded-md transition ${statusFilter === 'PENDING' ? 'bg-white shadow-sm text-yellow-600' : 'text-gray-500'}`}>Pending</button>
-              <button onClick={() => setStatusFilter('COMPLETED')} className={`px-3 py-1 text-xs font-bold rounded-md transition ${statusFilter === 'COMPLETED' ? 'bg-white shadow-sm text-green-600' : 'text-gray-500'}`}>Done</button>
-            </div>
+             <select className="border rounded-lg text-sm px-2" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <option value="ALL">All Status</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="PENDING">Pending</option>
+             </select>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-widest">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 text-gray-400 text-[10px] uppercase">
               <tr>
-                <th className="px-6 py-4">Student & ID</th>
+                <th className="px-6 py-4">Student</th>
                 <th className="px-6 py-4">Fee Type</th>
-                <th className="px-6 py-4 text-center">Amount</th>
-                <th className="px-6 py-4 text-center">Status</th>
+                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {filteredPayments.map((pay) => (
-                <tr key={pay.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <p className="font-semibold text-gray-900">{pay.student_name}</p>
-                    <p className="text-[10px] text-gray-400 font-mono uppercase">{pay.transaction_id || 'Cash Entry'}</p>
-                  </td>
+                <tr key={pay.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium">{pay.student_name}</td>
                   <td className="px-6 py-4 text-gray-500">{pay.fee_name}</td>
-                  <td className="px-6 py-4 font-bold text-gray-900 text-center">৳{pay.amount_paid}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                  <td className="px-6 py-4 font-bold">৳{pay.amount_paid}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
                       pay.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                     }`}>
                       {pay.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => handleDownloadReceipt(pay.id)}
-                      className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-xs bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
-                    >
-                      <FileText size={14} /> Receipt
-                    </button>
+                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    {pay.status === 'PENDING' && (
+                      <button onClick={() => handlePaybKash(pay)} className="flex items-center gap-1 bg-pink-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-pink-700">
+                        <Smartphone size={14} /> Pay bKash
+                      </button>
+                    )}
+                    {pay.status === 'COMPLETED' && (
+                      <button onClick={() => handleDownloadReceipt(pay.id)} className="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-100">
+                        <FileText size={14} /> Receipt
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

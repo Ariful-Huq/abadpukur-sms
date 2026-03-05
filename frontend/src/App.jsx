@@ -13,7 +13,7 @@ import Attendance from './pages/Attendance';
 import Fees from './pages/Fees';
 import Analytics from './pages/Analytics';
 import StudentProfile from "./pages/StudentProfile";
-
+import GradeList from './pages/GradeList';
 
 function App() {
   return (
@@ -65,6 +65,12 @@ function App() {
         </ProtectedRoute>
       } />
 
+      <Route path="/grades" element={
+        <ProtectedRoute>
+          <Layout><GradeList /></Layout>
+        </ProtectedRoute>
+      } />
+
       <Route path="/attendance" element={
         <ProtectedRoute>
           <Layout><Attendance /></Layout>
@@ -91,6 +97,14 @@ function App() {
         <ProtectedRoute>
           <Layout>
             <StudentProfile />
+          </Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/grades" element={
+        <ProtectedRoute>
+          <Layout>
+            <GradeList />
           </Layout>
         </ProtectedRoute>
       } />
