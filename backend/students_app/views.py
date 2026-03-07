@@ -107,12 +107,12 @@ class DashboardStatsView(APIView):
         # 3. Financial Stats
         total_fees = FeePayment.objects.filter(status='COMPLETED').aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
         
-        # 4. Fee Trend (Last 6 Months)
+        # 4. Fee Trend
         fee_trend = FeePayment.objects.filter(status='COMPLETED') \
             .annotate(month=TruncMonth('paid_at')) \
             .values('month') \
             .annotate(total=Sum('amount_paid')) \
-            .order_by('month')[:6]
+            .order_by('month')
 
         # 5. Grade Distribution
         grade_dist = Grade.objects.annotate(
@@ -134,7 +134,7 @@ class DashboardStatsView(APIView):
             "present_today": present_today,
             "total_fees": float(total_fees),
             "fee_trend": list(fee_trend),
-            "grade_distribution": list(grade_dist),
+            "grade_distribution": formatted_grade_dist,
             "today": today
         })
 

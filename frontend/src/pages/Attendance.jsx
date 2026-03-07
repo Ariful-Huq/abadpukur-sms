@@ -4,8 +4,8 @@ import { Save, Loader2, ChevronLeft, ChevronRight, Check, Clock, Trash2, X, Sear
 
 const Attendance = () => {
   const [grades, setGrades] = useState([]);
-  const [selectedGradeName, setSelectedGradeName] = useState(''); // "Grade 10"
-  const [selectedGrade, setSelectedGrade] = useState('');         // Unique ID for Grade+Section
+  const [selectedGradeName, setSelectedGradeName] = useState(''); 
+  const [selectedGrade, setSelectedGrade] = useState('');         
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,10 +16,9 @@ const Attendance = () => {
   const month = viewDate.getMonth();
   const [attendanceRecords, setAttendanceRecords] = useState({});
 
-  // 1. Initial Load: Fetch all available grade objects
+  // 1. Initial Load: Fetch grades
   useEffect(() => {
     api.get('grades/').then(res => {
-      // Sort alphabetically by name then section
       const sorted = res.data.sort((a, b) => 
         a.name.localeCompare(b.name) || a.section.localeCompare(b.section)
       );
@@ -27,7 +26,7 @@ const Attendance = () => {
     });
   }, []);
 
-  // 2. Data Fetching: Runs when a specific Section (ID) or Date changes
+  // 2. Data Fetching
   useEffect(() => {
     if (selectedGrade) fetchData();
     else {
@@ -53,13 +52,8 @@ const Attendance = () => {
   };
 
   // Logic for Dual Dropdowns
-  const uniqueGradeNames = useMemo(() => {
-    return [...new Set(grades.map(g => g.name))];
-  }, [grades]);
-
-  const availableSections = useMemo(() => {
-    return grades.filter(g => g.name === selectedGradeName);
-  }, [grades, selectedGradeName]);
+  const uniqueGradeNames = useMemo(() => [...new Set(grades.map(g => g.name))], [grades]);
+  const availableSections = useMemo(() => grades.filter(g => g.name === selectedGradeName), [grades, selectedGradeName]);
 
   const filteredStudents = useMemo(() => {
     return students.filter(s => 
@@ -88,6 +82,7 @@ const Attendance = () => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return students.reduce((acc, student) => {
       const status = attendanceRecords[`${student.id}-${dateStr}`];
+      // Dashboard sync: P and L both count towards the daily presence total
       return (status === 'P' || status === 'L') ? acc + 1 : acc;
     }, 0);
   };
@@ -123,6 +118,7 @@ const Attendance = () => {
     const key = `${studentId}-${dateStr}`;
     const current = attendanceRecords[key];
     let nextStatus;
+    // Cycling: None -> Present -> Late -> Absent -> None
     if (!current) nextStatus = 'P';
     else if (current === 'P') nextStatus = 'L';
     else if (current === 'L') nextStatus = 'A';
@@ -170,20 +166,15 @@ const Attendance = () => {
       {/* Control Bar */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border flex flex-wrap gap-4 items-center justify-between">
         <div className="flex gap-3 items-center">
-          {/* Grade Dropdown */}
           <select 
             className="p-3 border rounded-xl w-40 font-medium outline-none focus:ring-2 focus:ring-indigo-500"
-            onChange={(e) => {
-                setSelectedGradeName(e.target.value);
-                setSelectedGrade('');
-            }}
+            onChange={(e) => { setSelectedGradeName(e.target.value); setSelectedGrade(''); }}
             value={selectedGradeName}
           >
             <option value="">Grade</option>
             {uniqueGradeNames.map(name => <option key={name} value={name}>{name}</option>)}
           </select>
 
-          {/* Section Dropdown */}
           <select 
             className={`p-3 border rounded-xl w-32 font-medium outline-none focus:ring-2 focus:ring-indigo-500 ${!selectedGradeName ? 'bg-gray-50 opacity-50' : ''}`}
             disabled={!selectedGradeName}
@@ -194,7 +185,6 @@ const Attendance = () => {
             {availableSections.map(g => <option key={g.id} value={g.id}>{g.section}</option>)}
           </select>
           
-          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-3.5 text-gray-400" size={18} />
             <input 
@@ -206,7 +196,6 @@ const Attendance = () => {
             />
           </div>
 
-          {/* Date Navigator */}
           <div className="flex items-center bg-gray-100 rounded-xl p-1 ml-2">
             <button onClick={() => setViewDate(new Date(year, month - 1))} className="p-2 hover:bg-white rounded-lg transition"><ChevronLeft size={18}/></button>
             <span className="px-4 font-bold text-gray-700 min-w-[140px] text-center">{viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
@@ -214,7 +203,6 @@ const Attendance = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex gap-3">
           <button onClick={exportToCSV} disabled={!selectedGrade} className="bg-emerald-50 text-emerald-700 px-5 py-3 rounded-xl font-bold flex items-center gap-2 border border-emerald-100 hover:bg-emerald-100 transition disabled:opacity-50">
             <FileDown size={20} /> Export

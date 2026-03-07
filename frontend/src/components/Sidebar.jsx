@@ -16,7 +16,7 @@ const Sidebar = () => {
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/teachers', icon: User, label: 'Teachers' },
     { path: '/students', icon: Users, label: 'Students' },
-    { path: '/grades', icon: School, label: 'Grades' }, // Added Grades here
+    { path: '/grades', icon: School, label: 'Grades' },
     { path: '/attendance', icon: CalendarCheck, label: 'Attendance' },
     { path: '/fees', icon: CreditCard, label: 'Fees' },
     { path: '/analytics', icon: BarChart3, label: 'Analytics' },

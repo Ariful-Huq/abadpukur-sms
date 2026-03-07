@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { Users, GraduationCap, DollarSign, Activity, TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import StatCard from '../components/StatCard';
 
 const Home = () => {
   const [stats, setStats] = useState({
     total_students: 0,
     total_teachers: 0,
     attendance_rate: 0,
+    late_today: 0, // Added to state
     total_fees: 0,
     fee_trend: [],
     grade_distribution: []
@@ -39,7 +41,14 @@ const Home = () => {
         <StatCard icon={<Users className="text-blue-600" />} label="Active Students" value={stats.total_students} color="bg-blue-50" />
         <StatCard icon={<GraduationCap className="text-indigo-600" />} label="Active Teachers" value={stats.total_teachers} color="bg-indigo-50" />
         <StatCard icon={<DollarSign className="text-emerald-600" />} label="Total Revenue" value={`৳${stats.total_fees}`} color="bg-emerald-50" />
-        <StatCard icon={<Activity className="text-rose-600" />} label="Attendance Rate" value={`${stats.attendance_rate}%`} subValue={`${stats.late_today} Late Today`} color="bg-rose-50" />
+        {/* FIXED: Changed icon from <Attendance/> to <Activity/> */}
+        <StatCard 
+          icon={<Activity className="text-rose-600" />} 
+          label="Attendance Rate" 
+          value={`${stats.attendance_rate}%`} 
+          subValue={`${stats.late_today} Late Today`} 
+          color="bg-rose-50" 
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -74,7 +83,8 @@ const Home = () => {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.grade_distribution.filter(g => g.count > 0)}>
-                <XAxis dataKey="name" tick={{fontSize: 10}} />
+                {/* FIXED: Using display_name to show Section info */}
+                <XAxis dataKey={stats.grade_distribution[0]?.display_name ? "display_name" : "name"} tick={{fontSize: 10}} />
                 <Tooltip cursor={{fill: '#f8fafc'}} />
                 <Bar dataKey="count" radius={[10, 10, 0, 0]}>
                   {stats.grade_distribution.map((entry, index) => (
@@ -90,18 +100,4 @@ const Home = () => {
   );
 };
 
-const StatCard = ({ icon, label, value, subValue, color }) => (
-  <div className={`p-6 rounded-3xl ${color} flex items-center gap-5 transition-transform hover:scale-105 cursor-pointer`}>
-    <div className="bg-white p-4 rounded-2xl shadow-sm">{icon}</div>
-    <div>
-      <p className="text-sm font-medium text-gray-500">{label}</p>
-      <div className="flex items-baseline gap-2">
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        {subValue && <span className="text-[10px] font-bold text-rose-500 uppercase">{subValue}</span>}
-      </div>
-    </div>
-  </div>
-);
-
 export default Home;
-
