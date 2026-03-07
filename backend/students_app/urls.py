@@ -2,7 +2,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    StudentViewSet, AttendanceViewSet, GradeViewSet, TeacherViewSet, 
+    StudentViewSet, AttendanceViewSet, GradeViewSet, TeacherViewSet, RoutineViewSet,
     DashboardStatsView, FeeStructureViewSet, FeePaymentViewSet, ExportFeeReportView
 )
 from .views_mfs import MFSInitPaymentView, DownloadReceiptView
@@ -12,7 +12,8 @@ router = DefaultRouter()
 router.register(r'students', StudentViewSet)
 router.register(r'attendance', AttendanceViewSet)
 router.register(r'teachers', TeacherViewSet)
-router.register(r'grades', GradeViewSet) # Added this
+router.register(r'grades', GradeViewSet)
+router.register(r'routine', RoutineViewSet)
 router.register(r'fee-structures', FeeStructureViewSet)
 router.register(r'fee-payments', FeePaymentViewSet)
 

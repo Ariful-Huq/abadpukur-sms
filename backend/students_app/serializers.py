@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Attendance, Grade, Teacher, FeeStructure, FeePayment
+from .models import Student, Attendance, Grade, Teacher, Routine, FeeStructure, FeePayment
 
 class TeacherSerializer(serializers.ModelSerializer):
     assigned_grades = serializers.SerializerMethodField()
@@ -38,6 +38,35 @@ class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
         fields = ['id', 'name', 'section', 'teacher']
+
+class RoutineSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.StringRelatedField(source='teacher', read_only=True)
+    
+    class Meta:
+        model = Routine
+        fields = ['id', 'grade', 'day', 'slot_number', 'subject', 'teacher', 'teacher_name']
+    
+    def validate(self, data):
+        # Check if the teacher is already teaching another grade at this same time/day
+        day = data.get('day')
+        slot = data.get('slot_number')
+        teacher = data.get('teacher')
+        grade = data.get('grade')
+
+        if teacher:
+            # Look for ANY other routine record with same teacher, day, and slot
+            conflict = Routine.objects.filter(
+                day=day,
+                slot_number=slot,
+                teacher=teacher
+            ).exclude(grade=grade) # Exclude the current grade we are editing
+
+        if conflict.exists():
+            conflict_grade = conflict.first().grade
+            raise serializers.ValidationError(
+                f"Conflict: This teacher is already assigned to {conflict_grade} at this time."
+            )
+        return data    
 
 class AttendanceSerializer(serializers.ModelSerializer):
     student_name = serializers.ReadOnlyField(source='student.first_name')

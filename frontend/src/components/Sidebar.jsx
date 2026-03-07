@@ -8,7 +8,8 @@ import {
   CreditCard, 
   LogOut, 
   BarChart3, 
-  School 
+  School,
+  Clock // Added for Routine
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -17,6 +18,7 @@ const Sidebar = () => {
     { path: '/teachers', icon: User, label: 'Teachers' },
     { path: '/students', icon: Users, label: 'Students' },
     { path: '/grades', icon: School, label: 'Grades' },
+    { path: '/routine', icon: Clock, label: 'Routine' }, // Placed below Grades
     { path: '/attendance', icon: CalendarCheck, label: 'Attendance' },
     { path: '/fees', icon: CreditCard, label: 'Fees' },
     { path: '/analytics', icon: BarChart3, label: 'Analytics' },

@@ -71,6 +71,20 @@ class Attendance(models.Model):
     def __str__(self):
         return f"{self.student.first_name} - {self.date} - {self.status}"
 
+class Routine(models.Model):
+    DAYS_OF_WEEK = [
+        (0, 'Sunday'), (1, 'Monday'), (2, 'Tuesday'), 
+        (3, 'Wednesday'), (4, 'Thursday')
+    ]
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
+    day = models.IntegerField(choices=DAYS_OF_WEEK)
+    slot_number = models.IntegerField() # 1, 2, 3...
+    subject = models.CharField(max_length=100)
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('grade', 'day', 'slot_number')
+
 
 class FeeStructure(models.Model):
     name = models.CharField(max_length=100) # e.g., "Monthly Tuition - Grade 10"

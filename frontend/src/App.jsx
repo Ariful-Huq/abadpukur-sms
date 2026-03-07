@@ -14,6 +14,9 @@ import Fees from './pages/Fees';
 import Analytics from './pages/Analytics';
 import StudentProfile from "./pages/StudentProfile";
 import GradeList from './pages/GradeList';
+import Routine from './pages/Routine';
+
+
 
 function App() {
   return (
@@ -68,6 +71,12 @@ function App() {
       <Route path="/grades" element={
         <ProtectedRoute>
           <Layout><GradeList /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/routine" element={
+        <ProtectedRoute>
+          <Layout><Routine /></Layout>
         </ProtectedRoute>
       } />
 

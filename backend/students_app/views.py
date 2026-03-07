@@ -8,10 +8,10 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Teacher, Student, Attendance, Grade, FeeStructure, FeePayment
+from .models import Teacher, Student, Attendance, Grade, FeeStructure, FeePayment, Routine
 from .serializers import (
     StudentSerializer, AttendanceSerializer, GradeSerializer, 
-    TeacherSerializer, FeeStructureSerializer, FeePaymentSerializer
+    TeacherSerializer, FeeStructureSerializer, FeePaymentSerializer, RoutineSerializer
 )
 
 class TeacherViewSet(viewsets.ModelViewSet):
@@ -30,6 +30,36 @@ class StudentViewSet(viewsets.ModelViewSet):
     search_fields = ['first_name', 'last_name', 'registration_number']
     ordering_fields = ['enrollment_date', 'first_name']
     ordering = ['-enrollment_date']
+
+class RoutineViewSet(viewsets.ModelViewSet):
+    queryset = Routine.objects.all()
+    serializer_class = RoutineSerializer
+
+    def get_queryset(self):
+        queryset = Routine.objects.all()
+        grade_id = self.request.query_params.get('grade')
+        if grade_id:
+            queryset = queryset.filter(grade_id=grade_id)
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        """
+        Handles the 'Update or Create' logic for the grid.
+        """
+        data = request.data
+        # This ensures we don't get duplicates for the same grade/day/slot
+        routine_item, created = Routine.objects.update_or_create(
+            grade_id=data.get('grade'),
+            day=data.get('day'),
+            slot_number=data.get('slot_number'),
+            defaults={
+                'subject': data.get('subject'),
+                'teacher_id': data.get('teacher')
+            }
+        )
+        
+        serializer = self.get_serializer(routine_item)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)    
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all()
